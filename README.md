@@ -12,7 +12,9 @@ https://www.patreon.com/airwindows.
 - `glue/` – our small MIT glue: the plug-in interface (`bts_plugin.h`), a minimal VST2 stand-in
   (`audioeffectx.h`, so no Steinberg SDK is needed) and `aw_plugin.cpp`, which wraps one Airwindows effect.
   Airwindows' own files are compiled unmodified.
-- `tools/build.py` – fetches the official Airwindows repo (or uses `--aw-src`), checks every effect on test audio
+- `tools/build.py` – fetches the official Airwindows repo (or uses `--aw-src`), keeps the effects that make sense in
+  a phone studio (no dithers, console emulations, test tools or superseded versions; `--all` builds everything),
+  checks every effect on test audio
   (`tools/probe.cpp`: it must load, report its controls and stay finite), builds the ones that pass for Android
   (arm64-v8a, armeabi-v7a) and writes `dist/catalog.json`.
 - `dist/` – the published build: `catalog.json` (every effect with its controls, size and SHA-256 per file),

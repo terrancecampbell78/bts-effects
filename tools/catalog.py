@@ -48,7 +48,59 @@ KNOWN = {
 }
 
 
+# Hand-placed effects the keyword rules miss (Airwindows names are often whimsical).
+OVERRIDE = {
+    "ADT": "Modulation", "SweetWide": "Modulation", "Aura": "EQ & filter", "AverMatrix": "EQ & filter",
+    "Distance": "EQ & filter", "Distance2": "EQ & filter", "Distance3": "EQ & filter", "FastDistance": "EQ & filter",
+    "FastDistance2": "EQ & filter", "Parametric": "EQ & filter", "PrimeFIR": "EQ & filter", "Stonefire": "EQ & filter",
+    "Ultralight": "EQ & filter", "Ultralight2": "EQ & filter", "Ultralight3": "EQ & filter", "Pear": "EQ & filter",
+    "Pear2": "EQ & filter", "PurestAir": "EQ & filter",
+    "BlockParty": "Dynamics", "curve": "Dynamics", "DigitalBlack": "Dynamics", "Overheads": "Dynamics",
+    "Podcast": "Dynamics", "PodcastDeluxe": "Dynamics",
+    "CrickBass": "Amps & cabs", "RetroBass": "Amps & cabs",
+    "Crystal": "Drive & saturation", "Discontinuity": "Drive & saturation", "NCSeventeen": "Drive & saturation",
+    "SquareRoot": "Drive & saturation", "UnBox": "Drive & saturation", "ZOutputStage": "Drive & saturation",
+    "PurestWarm": "Drive & saturation", "PurestWarm2": "Drive & saturation", "PurestWarm3": "Drive & saturation",
+    "DeBez": "Lo-fi & glitch", "MV": "Reverb", "MV2": "Reverb", "StarChild": "Reverb", "StarChild2": "Reverb",
+}
+
+# TC 2026-11-15 ("any effect that's not relevant we can ignore"): not built or listed.
+SKIP_CATEGORIES = {"Dither", "Console"}
+SKIP = {
+    # dithers, consoles and mastering/bit-depth tools the rules don't catch
+    "Beam", "ChannelX", "DoublePaul", "PaulWide", "RawGlitters", "RawTimbers", "StudioTan", "ContentHideD",
+    "BuildATPDF", "uLawEncode", "uLawDecode",
+    # technical/test utilities
+    "DCVoltage", "EdIsDim", "EveryTrim", "HermeTrim", "Flipity", "LRFlipTimer", "MSFlipTimer", "Remap", "Zoom",
+    "PhaseNudge", "MoNoam", "SoftClock", "SoftClock2", "SoftClock3", "LRConvolve", "LRConvolve2", "LRConvolve3",
+    "PeaksOnly", "SlewOnly", "SubsOnly", "Balanced", "SideDull", "Monitoring", "Monitoring2", "Monitoring3",
+}
+# Names where the number is part of the name, not a version.
+NOT_VERSIONS = {"kPlate140", "kPlate240"}
+
+
+def newest_only(names):
+    """Drops superseded versions: of ToTape5..ToTape9 only ToTape9 stays (same name + a higher number)."""
+    best = {}
+    for n in names:
+        m = re.match(r"^(.*?)(\d*)$", n)
+        base, num = m.group(1), int(m.group(2) or 0)
+        if n in NOT_VERSIONS:
+            best[n] = (n, 0); continue
+        if base not in best or num > best[base][1]:
+            best[base] = (n, num)
+    return {n for n, _ in best.values()}
+
+
+def relevant(names):
+    """The effects worth building for a phone studio, from all Airwindows names."""
+    keep = newest_only(names)
+    return sorted(n for n in keep if n not in SKIP and category(n) not in SKIP_CATEGORIES)
+
+
 def category(name):
+    if name in OVERRIDE:
+        return OVERRIDE[name]
     for cat, rx in RULES:
         if re.search(rx, name):
             return cat

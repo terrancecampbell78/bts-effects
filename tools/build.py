@@ -97,6 +97,7 @@ def main():
     ap.add_argument("--ndk"); ap.add_argument("--only", nargs="*"); ap.add_argument("--jobs", type=int, default=2)
     ap.add_argument("--out", default=str(ROOT / "dist")); ap.add_argument("--work", default=str(ROOT / "work"))
     ap.add_argument("--key", help="ECDSA P-256 private key (PEM) to sign the catalog")
+    ap.add_argument("--all", action="store_true", help="build every effect, also dithers, consoles and old versions")
     a = ap.parse_args()
     work = Path(a.work); work.mkdir(parents=True, exist_ok=True)
     if a.aw_src:
@@ -112,6 +113,8 @@ def main():
     names = sorted(d.name for d in aw.iterdir() if (d / f"{d.name}.cpp").exists() and (d / f"{d.name}Proc.cpp").exists())
     if a.only:
         names = [n for n in names if n in set(a.only)]
+    elif not a.all:
+        names = cat.relevant(names)   # leaves out dithers, consoles, test tools and superseded versions
     b = Builder(aw, ndk_toolchain(a.ndk), out, work)
     ok, failed = {}, {}
     t0 = time.time()
